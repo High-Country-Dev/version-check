@@ -1,8 +1,11 @@
 name: "Check Versions Bumped"
 description: "Check if versions are bumped in the PR"
 inputs:
-  github-token:
+  token:
     description: "GitHub token"
+    required: true
+  version-before:
+    description: "Version before"
     required: true
 
 runs:

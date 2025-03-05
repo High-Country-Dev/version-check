@@ -1,5 +1,5 @@
 {
-  "name": "check-versions-bumped-action",
+  "name": "version-check",
   "version": "1.0.0",
   "description": "GitHub Action to check if versions are bumped in the PR",
   "main": "dist/index.js",
