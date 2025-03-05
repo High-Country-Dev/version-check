@@ -94,9 +94,16 @@ async function main() {
 
 async function checkFile(filePath: string) {
   const content = await fs.readFile(filePath, "utf8");
-  const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/g;
-  const matches = content.matchAll(regex);
-  return matches.next().value?.[1] ?? "";
+  const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/gm;
+  let latestVersion = "0.0.0";
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const newVersion = match[1].toString();
+    if (semverDiff(latestVersion, newVersion)) {
+      latestVersion = newVersion;
+    }
+  }
+  return latestVersion;
 }
 
 main();

@@ -35213,11 +35213,17 @@ async function main() {
     });
 }
 async function checkFile(filePath) {
-    var _a, _b;
     const content = await promises_1.default.readFile(filePath, "utf8");
-    const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/g;
-    const matches = content.matchAll(regex);
-    return (_b = (_a = matches.next().value) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : "";
+    const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/gm;
+    let latestVersion = "0.0.0";
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+        const newVersion = match[1].toString();
+        if ((0, semver_diff_1.default)(latestVersion, newVersion)) {
+            latestVersion = newVersion;
+        }
+    }
+    return latestVersion;
 }
 main();
 
