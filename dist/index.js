@@ -35189,20 +35189,25 @@ async function main() {
         .then((json) => {
         var _a;
         const version = (_a = json === null || json === void 0 ? void 0 : json.version) !== null && _a !== void 0 ? _a : "";
+        console.log(`current ${currentPR.base.label} package.json version`, version);
+        console.log("appConfigVersion", appConfigVersion);
+        console.log("expoVersion", expoVersion);
+        console.log("nextjsVersion", nextjsVersion);
+        console.log("rootVersion", rootVersion);
         if (!version) {
             core.setFailed(`No package.json version found in ${currentPR.base.label} branch`);
             return;
         }
-        if ((0, semver_diff_1.default)(version, appConfigVersion)) {
+        if (!(0, semver_diff_1.default)(version, appConfigVersion)) {
             core.setFailed("App Config version is not bumped");
         }
-        if ((0, semver_diff_1.default)(version, expoVersion)) {
+        if (!(0, semver_diff_1.default)(version, expoVersion)) {
             core.setFailed("Expo package version is not bumped");
         }
-        if ((0, semver_diff_1.default)(version, nextjsVersion)) {
+        if (!(0, semver_diff_1.default)(version, nextjsVersion)) {
             core.setFailed("NextJS package version is not bumped");
         }
-        if ((0, semver_diff_1.default)(version, rootVersion)) {
+        if (!(0, semver_diff_1.default)(version, rootVersion)) {
             core.setFailed("Root package version is not bumped");
         }
     });
