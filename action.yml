@@ -4,9 +4,6 @@ inputs:
   token:
     description: "GitHub token"
     required: true
-  version-before:
-    description: "Version before"
-    required: true
 
 runs:
   using: "node20"
