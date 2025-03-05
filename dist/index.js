@@ -35154,15 +35154,15 @@ async function main() {
     const prNumber = (_b = process.env.PR_NUMBER) !== null && _b !== void 0 ? _b : core.getInput("pr-number");
     const octokit = github.getOctokit(token);
     const { context } = github;
-    const { owner, repo } = context.repo;
+    const repo = context.repo;
     let currentPR;
     if (context.payload.pull_request) {
         currentPR = context.payload.pull_request;
     }
     else {
         const { data: pr } = await octokit.rest.pulls.get({
-            owner,
-            repo,
+            owner: repo.owner,
+            repo: repo.repo,
             pull_number: parseInt(prNumber, 10),
         });
         currentPR = pr;
@@ -35170,10 +35170,10 @@ async function main() {
     const baseBranch = currentPR.base.ref;
     if (baseBranch !== "dev" && baseBranch !== "staging")
         return;
-    const expoVersion = await checkFile("./expo-package.json");
-    const appConfigVersion = await checkFile("./src/app.config.ts");
-    const nextjsVersion = await checkFile("./nextjs-package.json");
-    const rootVersion = await checkFile("./root-package.json");
+    const expoVersion = await checkFile("./apps/expo/package.json");
+    const appConfigVersion = await checkFile("./apps/expo/app.config.ts");
+    const nextjsVersion = await checkFile("./apps/nextjs/package.json");
+    const rootVersion = await checkFile("./package.json");
     const baseSha = (_c = github.context.payload.pull_request) === null || _c === void 0 ? void 0 : _c.base.sha;
     const baseUrl = `https://raw.githubusercontent.com/${github.context.repo.owner}/${github.context.repo.repo}/${baseSha}/package.json`;
     const headers = {};
@@ -35182,9 +35182,17 @@ async function main() {
         headers.Authorization = `token ${token}`;
     }
     fetch(baseUrl, { headers })
-        .then((res) => res.json())
-        .then((res) => res.version)
-        .then((version) => {
+        .then(async (res) => {
+        const json = await res.json();
+        return json;
+    })
+        .then((json) => {
+        var _a;
+        const version = (_a = json === null || json === void 0 ? void 0 : json.version) !== null && _a !== void 0 ? _a : "";
+        if (!version) {
+            core.setFailed(`No package.json version found in ${currentPR.base.label} branch`);
+            return;
+        }
         if ((0, semver_diff_1.default)(version, appConfigVersion)) {
             core.setFailed("App Config version is not bumped");
         }

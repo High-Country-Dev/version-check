@@ -6,8 +6,8 @@ import semverDiff from "semver-diff";
 interface PullRequest {
   number: number;
   title: string;
-  base: { ref: string };
-  head: { ref: string };
+  base: { ref: string; label: string };
+  head: { ref: string; label: string };
 }
 
 async function main() {
@@ -18,15 +18,15 @@ async function main() {
 
   const { context } = github;
 
-  const { owner, repo } = context.repo;
+  const repo = context.repo;
 
   let currentPR: PullRequest;
   if (context.payload.pull_request) {
     currentPR = context.payload.pull_request as PullRequest;
   } else {
     const { data: pr } = await octokit.rest.pulls.get({
-      owner,
-      repo,
+      owner: repo.owner,
+      repo: repo.repo,
       pull_number: parseInt(prNumber, 10),
     });
     currentPR = pr as PullRequest;
@@ -36,10 +36,10 @@ async function main() {
 
   if (baseBranch !== "dev" && baseBranch !== "staging") return;
 
-  const expoVersion = await checkFile("./expo-package.json");
-  const appConfigVersion = await checkFile("./src/app.config.ts");
-  const nextjsVersion = await checkFile("./nextjs-package.json");
-  const rootVersion = await checkFile("./root-package.json");
+  const expoVersion = await checkFile("./apps/expo/package.json");
+  const appConfigVersion = await checkFile("./apps/expo/app.config.ts");
+  const nextjsVersion = await checkFile("./apps/nextjs/package.json");
+  const rootVersion = await checkFile("./package.json");
 
   const baseSha = github.context.payload.pull_request?.base.sha;
   const baseUrl = `https://raw.githubusercontent.com/${github.context.repo.owner}/${github.context.repo.repo}/${baseSha}/package.json`;
@@ -51,9 +51,20 @@ async function main() {
   }
 
   fetch(baseUrl, { headers })
-    .then((res) => res.json())
-    .then((res) => res.version)
-    .then((version) => {
+    .then(async (res) => {
+      const json = await res.json();
+      return json;
+    })
+    .then((json) => {
+      const version = json?.version ?? "";
+
+      if (!version) {
+        core.setFailed(
+          `No package.json version found in ${currentPR.base.label} branch`
+        );
+        return;
+      }
+
       if (semverDiff(version, appConfigVersion)) {
         core.setFailed("App Config version is not bumped");
       }
