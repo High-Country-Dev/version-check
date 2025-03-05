@@ -1,0 +1,29 @@
+{
+  "name": "check-versions-bumped-action",
+  "version": "1.0.0",
+  "description": "GitHub Action to check if versions are bumped in the PR",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "ncc build src/main.ts -o dist",
+    "test": "jest"
+  },
+  "keywords": [
+    "github",
+    "action",
+    "notion",
+    "pr",
+    "status"
+  ],
+  "author": "King Joshua Montayre",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1",
+    "semver-diff": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@vercel/ncc": "^0.36.1",
+    "typescript": "^4.9.5"
+  }
+}
