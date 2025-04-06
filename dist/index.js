@@ -35198,13 +35198,13 @@ async function main() {
             core.setFailed(`No package.json version found in ${currentPR.base.label} branch`);
             return;
         }
-        if (!(0, semver_diff_1.default)(version, appConfigVersion)) {
+        if (appConfigVersion !== "" && !(0, semver_diff_1.default)(version, appConfigVersion)) {
             core.setFailed("App Config version is not bumped");
         }
-        if (!(0, semver_diff_1.default)(version, expoVersion)) {
+        if (expoVersion !== "" && !(0, semver_diff_1.default)(version, expoVersion)) {
             core.setFailed("Expo package version is not bumped");
         }
-        if (!(0, semver_diff_1.default)(version, nextjsVersion)) {
+        if (nextjsVersion !== "" && !(0, semver_diff_1.default)(version, nextjsVersion)) {
             core.setFailed("NextJS package version is not bumped");
         }
         if (!(0, semver_diff_1.default)(version, rootVersion)) {
@@ -35213,17 +35213,23 @@ async function main() {
     });
 }
 async function checkFile(filePath) {
-    const content = await promises_1.default.readFile(filePath, "utf8");
-    const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/gm;
-    let latestVersion = "0.0.0";
-    let match;
-    while ((match = regex.exec(content)) !== null) {
-        const newVersion = match[1].toString();
-        if ((0, semver_diff_1.default)(latestVersion, newVersion)) {
-            latestVersion = newVersion;
+    try {
+        const content = await promises_1.default.readFile(filePath, "utf8");
+        const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/gm;
+        let latestVersion = "0.0.0";
+        let match;
+        while ((match = regex.exec(content)) !== null) {
+            const newVersion = match[1].toString();
+            if ((0, semver_diff_1.default)(latestVersion, newVersion)) {
+                latestVersion = newVersion;
+            }
         }
+        return latestVersion;
     }
-    return latestVersion;
+    catch (error) {
+        core.setFailed(`Error reading file ${filePath}: ${error}`);
+        return "";
+    }
 }
 main();
 
