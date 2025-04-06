@@ -106,7 +106,7 @@ async function checkFile(filePath: string) {
     }
     return latestVersion;
   } catch (error) {
-    core.setFailed(`Error reading file ${filePath}: ${error}`);
+    console.error(`Error reading file ${filePath}: ${error}`);
     return "";
   }
 }
