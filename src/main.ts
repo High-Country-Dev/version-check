@@ -74,15 +74,15 @@ async function main() {
         return;
       }
 
-      if (!semverDiff(version, appConfigVersion)) {
+      if (appConfigVersion !== "" && !semverDiff(version, appConfigVersion)) {
         core.setFailed("App Config version is not bumped");
       }
 
-      if (!semverDiff(version, expoVersion)) {
+      if (expoVersion !== "" && !semverDiff(version, expoVersion)) {
         core.setFailed("Expo package version is not bumped");
       }
 
-      if (!semverDiff(version, nextjsVersion)) {
+      if (nextjsVersion !== "" && !semverDiff(version, nextjsVersion)) {
         core.setFailed("NextJS package version is not bumped");
       }
 
@@ -93,17 +93,22 @@ async function main() {
 }
 
 async function checkFile(filePath: string) {
-  const content = await fs.readFile(filePath, "utf8");
-  const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/gm;
-  let latestVersion = "0.0.0";
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    const newVersion = match[1].toString();
-    if (semverDiff(latestVersion, newVersion)) {
-      latestVersion = newVersion;
+  try {
+    const content = await fs.readFile(filePath, "utf8");
+    const regex = /["|']*version["|']*:\s*["|']*(\d+\.\d+\.\d+)["|']*/gm;
+    let latestVersion = "0.0.0";
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      const newVersion = match[1].toString();
+      if (semverDiff(latestVersion, newVersion)) {
+        latestVersion = newVersion;
+      }
     }
+    return latestVersion;
+  } catch (error) {
+    core.setFailed(`Error reading file ${filePath}: ${error}`);
+    return "";
   }
-  return latestVersion;
 }
 
 main();
